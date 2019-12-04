@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: streamconsummer
+  labels:
+    app: streamconsummer
+spec:
+  replicas: "{{$.iios.app.replicas}}"
+  selector:
+    matchLabels:
+      app: streamconsummer
+  template:
+    metadata:
+      labels:
+        app: streamconsummer
+    spec:
+      containers:
+      - name: streamconsummer
+        image: "ignitial/streamconsummer:{{$.iios.app.version}}"
+        imagePullPolicy: "{{$.iios.app.imagePullPolicy}}"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /opt/streamconsummer/server/config/generated
+        ports: "{{$.iios.app.ports}}"
+      imagePullSecrets:
+        - name: regcred
+      volumes:
+        - name: config-volume
+          configMap:
+            name: streamconsummer-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: streamconsummer
+spec:
+  selector:
+    app: streamconsummer
+  ports:
+  - name: http
+    port: "{{$.iios.app.ports[0].containerPort}}"
+    targetPort: "{{$.iios.app.ports[0].containerPort}}"
