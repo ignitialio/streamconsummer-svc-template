@@ -20,10 +20,14 @@ class StreamConsummer extends Service {
     /* @_PUT_ */
     return new Promise((resolve, reject) => {
       try {
-        // that's an input stream
-        this._streamName = 'stream:' + this._name + ':input'
-        this._stream = this._addStream(name, source)
-        resolve(this._streamName)
+        if (!this._stream) {
+          // that's an input stream
+          this._streamName = 'stream:' + this._name + ':input'
+          this._stream = this._addStream(name, source)
+          resolve(this._streamName)
+        } else {
+          reject(new Error('stream already exist'))
+        }
       } catch (err) {
         reject(err)
       }
@@ -32,14 +36,18 @@ class StreamConsummer extends Service {
 
   // destroys output stream
   // ***************************************************************************
-  destroy(args) {
+  destroy() {
     /* @_DELETE_ */
     return new Promise((resolve, reject) => {
       try {
-        this._removeStream(this._streamName)
-        this._streamName = undefined
-        this._stream = undefined
-        resolve(name)
+        if (this._stream) {
+          this._removeStream(this._streamName)
+          this._streamName = undefined
+          this._stream = undefined
+          resolve(name)
+        } else {
+          reject(new Error('no stream instance'))
+        }
       } catch (err) {
         reject(err)
       }
